@@ -1,51 +1,51 @@
 # MinStack
 
-Стек с поддержкой получения минимального элемента за O(1).
+A stack that returns its minimum element in O(1).
 
-## Задача
+## Problem
 
-Обычный стек не умеет быстро отвечать на вопрос "какой сейчас в нём минимум" — для этого пришлось бы перебирать все элементы за O(n). MinStack решает эту проблему, храня рядом со стеком значений вспомогательный стек минимумов.
+A regular stack can't answer "what's the current minimum" quickly — you'd have to scan every element, which is O(n). MinStack fixes this by keeping a second stack alongside the values that tracks minimums.
 
-## Как это устроено
+## How it works
 
-Структура держит два слайса:
+The struct holds two slices:
 
-- `stack` — сами значения, обычный LIFO-стек.
-- `minStack` — история минимумов. На вершине всегда лежит минимум для текущего состояния `stack`.
+- `stack` — the actual values, a normal LIFO stack.
+- `minStack` — a history of minimums. Its top always holds the minimum for the current state of `stack`.
 
-При добавлении элемента он кладётся в `minStack` только если оказывается новым минимумом (меньше либо равен текущей вершине `minStack`). При удалении элемента из `stack` он снимается и с `minStack`, если совпадает с текущим минимумом. Так `minStack` всегда синхронизирован с `stack` и хранит минимум "на глубину" каждого состояния.
+When pushing, a value goes into `minStack` only if it's a new minimum (less than or equal to the current top of `minStack`). When popping, the value is also removed from `minStack` if it matches the current minimum. This keeps `minStack` in sync with `stack` and gives it the correct minimum "at every depth."
 
-Равенство (`<=`, а не `<`) при пуше важно: если в стек кладут несколько одинаковых минимальных значений, каждое из них должно попасть в `minStack`, иначе после первого `Pop()` минимум будет потерян раньше времени.
+The `<=` comparison in `Push` (not strict `<`) matters: if several equal minimum values get pushed, each one needs to land in `minStack`. Otherwise the minimum would be lost too early after a single `Pop()`.
 
 ## API
 
 ### `Constructor() MinStack`
-Создаёт пустой стек.
+Creates an empty stack.
 
 ### `Push(value int)`
-Добавляет элемент на вершину стека.
+Adds an element to the top of the stack.
 
 ### `Pop()`
-Удаляет верхний элемент. Если стек пуст — ничего не делает.
+Removes the top element. Does nothing if the stack is empty.
 
 ### `Top() int`
-Возвращает верхний элемент без удаления. Возвращает `0`, если стек пуст.
+Returns the top element without removing it. Returns `0` if the stack is empty.
 
 ### `GetMin() int`
-Возвращает минимальный элемент во всём стеке. Возвращает `0`, если стек пуст.
+Returns the minimum element in the whole stack. Returns `0` if the stack is empty.
 
-## Сложность
+## Complexity
 
-| Операция | Время | Память     |
-|----------|-------|------------|
-| Push     | O(1)  | O(n)       |
-| Pop      | O(1)  | —          |
-| Top      | O(1)  | —          |
-| GetMin   | O(1)  | —          |
+| Operation | Time | Space |
+|-----------|------|-------|
+| Push      | O(1) | O(n)  |
+| Pop       | O(1) | —     |
+| Top       | O(1) | —     |
+| GetMin    | O(1) | —     |
 
-Память в худшем случае удваивается (если каждый новый элемент — новый минимум), но амортизированно остаётся O(n).
+Memory can double in the worst case (if every new element is a new minimum), but amortized it stays O(n).
 
-## Пример использования
+## Usage example
 
 ```go
 ms := Constructor()
@@ -63,6 +63,6 @@ ms.Pop()
 ms.GetMin() // 5
 ```
 
-## Ограничения реализации
+## Implementation caveat
 
-Методы `Top()` и `GetMin()` возвращают `0` при пустом стеке вместо ошибки или паники. Это отклонение от идиоматичного Go (обычно ожидается `(int, bool)` или явная паника), выбранное ради простоты интерфейса — стоит иметь это в виду при использовании в проде.
+`Top()` and `GetMin()` return `0` on an empty stack instead of an error or a panic. That's a deviation from idiomatic Go (you'd normally expect `(int, bool)` or an explicit panic), chosen to keep the interface simple — worth keeping in mind before using this in production code.

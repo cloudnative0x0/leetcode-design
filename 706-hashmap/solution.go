@@ -1,74 +1,53 @@
 package _706_hashmap
 
-const size = 769
+const bucketCount = 10007
 
-type node struct {
-	key  int
-	val  int
-	next *node
+type Node struct {
+	key   int
+	value int
 }
 
 type MyHashMap struct {
-	buckets [size]*node
+	buckets [][]*Node
 }
 
 func Constructor() MyHashMap {
-	return MyHashMap{}
+	return MyHashMap{buckets: make([][]*Node, bucketCount)}
+}
+
+func (this *MyHashMap) hash(key int) int {
+	return key % bucketCount
 }
 
 func (this *MyHashMap) Put(key int, value int) {
-	idx := key % size
-
-	curr := this.buckets[idx]
-	for curr != nil {
-		if curr.key == key {
-			curr.val = value
+	idx := this.hash(key)
+	for _, n := range this.buckets[idx] {
+		if n.key == key {
+			n.value = value
 			return
 		}
-
-		curr = curr.next
 	}
 
-	this.buckets[idx] = &node{
-		key:  key,
-		val:  value,
-		next: this.buckets[idx],
-	}
+	this.buckets[idx] = append(this.buckets[idx], &Node{key: key, value: value})
 }
 
 func (this *MyHashMap) Get(key int) int {
-	idx := key % size
-	curr := this.buckets[idx]
-
-	for curr != nil {
-		if curr.key == key {
-			return curr.val
+	idx := this.hash(key)
+	for _, n := range this.buckets[idx] {
+		if n.key == key {
+			return n.value
 		}
-
-		curr = curr.next
 	}
 
 	return -1
 }
 
 func (this *MyHashMap) Remove(key int) {
-	idx := key % size
-	curr := this.buckets[idx]
-
-	if curr == nil {
-		return
-	}
-
-	if curr.key == key {
-		this.buckets[idx] = curr.next
-		return
-	}
-
-	for curr.next != nil {
-		if curr.next.key == key {
-			curr.next = curr.next.next
+	idx := this.hash(key)
+	for i, n := range this.buckets[idx] {
+		if n.key == key {
+			this.buckets[idx] = append(this.buckets[idx][:i], this.buckets[idx][i+1:]...)
 			return
 		}
-		curr = curr.next
 	}
 }

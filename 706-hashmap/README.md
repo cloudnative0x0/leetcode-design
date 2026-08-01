@@ -1,146 +1,106 @@
 # 706 · Design HashMap
 
-**Difficulty:** Easy | **Time:** O(1) amortized | **Space:** O(n)
+**Difficulty:** Easy | **Time:** O(1) amortized | **Space:** O(n + buckets)
 
 ---
 
 ## Solution uses separate chaining
-
-Fixed-size array of buckets, each bucket is the head of a linked list.
-Collisions are resolved through chaining: if two keys land on the same index, they just get chained to each other via `next`.
+An array of buckets, each holding a slice of entries that share the same hash. No resizing, no open addressing. Fixed prime-sized table plus a chain per bucket for collisions.
 
 ---
 
-## Architecture
+## Why not open addressing
 
-- `buckets [size]*node` — array of list heads, size is fixed at compile time
-- `node` — list element with `key`, `val` and a pointer to the next node
+The first version used open addressing with linear probing on a fixed table of size 16. It timed out, for two reasons:
+
+- **16 buckets is nothing.** LeetCode runs roughly 10^4 Put calls. Past the 16th insert every slot is occupied, and `for this.buckets[index] != nil` either loops forever or degrades into a full array scan on every single call.
+- **Remove never freed the slot.** It did `this.buckets[index].key = -1` instead of an actual deletion. The slot stays non-nil, so Put still treats it as occupied and can never reuse it. The table clogs permanently — Remove calls pile up without ever giving Put any real room back.
+
+A fixed-size table with no resize plus linear probing is a guaranteed dead end once enough put/remove calls accumulate. Combining open addressing with real deletion also needs tombstones and periodic rehashing to stay correct — extra machinery for a problem whose constraints are just `0 <= key, value <= 10^6`.
+
+Chaining sidesteps all of it: buckets are independent, deletion is a plain slice removal, no half-dead state to track.
 
 ```go
-const size = 769
+const bucketCount = 10007
 
-type node struct {
-    key  int
-    val  int
-    next *node
+type Node struct {
+    key   int
+    value int
 }
 
 type MyHashMap struct {
-    buckets [size]*node
+    buckets [][]*Node
 }
 ```
 
-> 769 is a prime number. Primes as a table size cut down on collisions for unlucky key sets (when keys share common divisors).
+## Why 10007
 
-## Hash function
+A prime, comfortably above the 10^4 operations in the constraints. Prime bucket counts spread out keys better than round numbers when the input has patterns (powers of two, multiples of ten, etc.) — a standard hash table trick to avoid clustering. No resize logic needed: with 10007 buckets and at most 10^4 entries, average chain length stays near 0 or 1.
 
-Nothing fancy — just remainder from division:
+## hash
 
 ```go
-idx := key % size
+func (this *MyHashMap) hash(key int) int {
+    return key % bucketCount
+}
 ```
 
-No extra bit mixing, no XOR with a shift. For LeetCode's integer keys this is enough, distribution comes out even.
+Constraints guarantee `key >= 0`, so the negative-key branch from the old version is gone.
 
 ## Put
 
-First walk the chain — if the key is already there, update the value and return:
+Walk the bucket's chain. Found the key — overwrite the value and return. Not found — append a new node.
 
 ```go
 func (this *MyHashMap) Put(key int, value int) {
-    idx := key % size
-
-    curr := this.buckets[idx]
-    for curr != nil {
-        if curr.key == key {
-            curr.val = value
+    idx := this.hash(key)
+    for _, n := range this.buckets[idx] {
+        if n.key == key {
+            n.value = value
             return
         }
-
-        curr = curr.next
     }
-
-    this.buckets[idx] = &node{
-        key:  key,
-        val:  value,
-        next: this.buckets[idx],
-    }
+    this.buckets[idx] = append(this.buckets[idx], &Node{key: key, value: value})
 }
 ```
 
-If the loop reaches the end without a match — insert the new node at the head. Head insertion is O(1), no need to walk the list a second time to append.
-
 ## Get
 
-Linear walk through the chain, buckets stay short in practice — close to O(1):
+Linear scan through the chain, O(1) on average since chains stay short.
 
 ```go
 func (this *MyHashMap) Get(key int) int {
-    idx := key % size
-    curr := this.buckets[idx]
-
-    for curr != nil {
-        if curr.key == key {
-            return curr.val
+    idx := this.hash(key)
+    for _, n := range this.buckets[idx] {
+        if n.key == key {
+            return n.value
         }
-
-        curr = curr.next
     }
-
     return -1
 }
 ```
 
-Not found — return -1, as the problem requires.
-
 ## Remove
 
-Two cases here, easy to mix up:
-
-1. The node to remove is the head of the list. Just move `buckets[idx]` to `next`.
-2. The node is somewhere in the middle or at the tail. Walk with a pointer to the previous element and relink `next`.
+This is where the fix actually lives: the entry gets removed for real, not marked.
 
 ```go
 func (this *MyHashMap) Remove(key int) {
-    idx := key % size
-    curr := this.buckets[idx]
-
-    if curr == nil {
-        return
-    }
-
-    if curr.key == key {
-        this.buckets[idx] = curr.next
-        return
-    }
-
-    for curr.next != nil {
-        if curr.next.key == key {
-            curr.next = curr.next.next
+    idx := this.hash(key)
+    for i, n := range this.buckets[idx] {
+        if n.key == key {
+            this.buckets[idx] = append(this.buckets[idx][:i], this.buckets[idx][i+1:]...)
             return
         }
-        curr = curr.next
     }
 }
 ```
 
-The head can't be removed in the same loop as the rest of the nodes — it has no explicit "previous", so it's handled as a separate branch before the loop starts.
-
-## Why an array instead of map[int]int
-
-The problem statement asks to build a HashMap without using built-in hash tables. Hence a fixed-size array plus chaining — the minimal setup that implements the actual idea of a hash table by hand.
-
-## Complexity
-
-| Operation | Average | Worst case |
-|-----------|---------|------------|
-| Put       | O(1)    | O(n)       |
-| Get       | O(1)    | O(n)       |
-| Remove    | O(1)    | O(n)       |
-
-Worst case — all keys collide into one bucket (key % size matches for every key). On random data with size = 769 this barely happens.
+`append(slice[:i], slice[i+1:]...)` is the usual Go idiom for cutting an element out of a slice — shifts the tail left, length drops by one. The backing array doesn't shrink, but that's irrelevant here: live entry count is tracked by slice length, not capacity.
 
 ---
 
-> Chaining is simpler than open addressing but pays for it with an extra allocation per node.
-> For an interview or LeetCode it's enough — no resize, no load factor to worry about.
+> Open addressing without resizing is a time bomb: once load factor approaches 100%, every operation collapses into O(n) or an infinite loop.
+> Chaining over a fixed prime-sized table clears the constraints without a single line of resize logic.
+
+If the key range weren't bounded to `[0, 10^6]`, this would need dynamic resizing on top (double bucketCount and rehash once load factor passes ~0.75), but for this problem that's unnecessary weight.

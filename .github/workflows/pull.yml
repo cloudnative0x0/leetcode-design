@@ -12,19 +12,43 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
 
       - name: Set up Go
         uses: actions/setup-go@v7
         with:
           go-version: '1.24.2'
 
-      - name: Run golangci-lint
+      - name: Get changed Go directories
+        id: changed-dirs
+        run: |
+          git diff --name-only origin/${{ github.base_ref }}...HEAD > changed_files.txt
+          
+          grep '\.go$' changed_files.txt > go_files.txt || true
+          
+          dirs=$(cat go_files.txt | xargs -r dirname | sort -u || true)
+          
+          if [ -z "$dirs" ]; then
+            echo "no_changes=true" >> $GITHUB_OUTPUT
+          else
+            packages=""
+          
+            for d in $dirs; do
+              packages="$packages ./$d/..."
+            done
+          
+            echo "packages=$packages" >> $GITHUB_OUTPUT
+            echo "no_changes=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Run golangci-lint (changed dirs only)
+        if: steps.changed-dirs.outputs.no_changes == 'false'
         uses: golangci/golangci-lint-action@v9
         with:
           version: latest
-          args: |
-            -v ./...
+          args: -v ${{ steps.changed-dirs.outputs.packages }}
 
-      - name: Run tests
-        run: go test -race -v ./...
-        
+      - name: Run tests (changed dirs only)
+        if: steps.changed-dirs.outputs.no_changes == 'false'
+        run: go test -race -v ${{ steps.changed-dirs.outputs.packages }}

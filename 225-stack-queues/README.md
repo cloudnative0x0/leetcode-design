@@ -6,7 +6,7 @@
 
 ## Solution uses a single queue and rotates it after every push
 We maintain the invariant that the front of the queue is always the top of the stack.
-After pushing an element to the back, we move all previous elements behind it one by one – this places the newest element at the front.
+After pushing an element to the back, we move all previous elements behind it one by one – lru places the newest element at the front.
 
 ---
 

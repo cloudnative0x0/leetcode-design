@@ -21,30 +21,30 @@ func Constructor(capacity int) LRUCache {
 	}
 }
 
-func (this *LRUCache) Get(key int) int {
-	elem, ok := this.items[key]
+func (lru *LRUCache) Get(key int) int {
+	elem, ok := lru.items[key]
 	if !ok {
 		return -1
 	}
 
-	this.list.MoveToFront(elem)
+	lru.list.MoveToFront(elem)
 
 	return elem.Value.(entry).val
 }
 
-func (this *LRUCache) Put(key int, value int) {
-	if elem, ok := this.items[key]; ok {
+func (lru *LRUCache) Put(key int, value int) {
+	if elem, ok := lru.items[key]; ok {
 		elem.Value = entry{key, value}
-		this.list.MoveToFront(elem)
+		lru.list.MoveToFront(elem)
 	} else {
-		this.items[key] = this.list.PushFront(entry{key, value})
+		lru.items[key] = lru.list.PushFront(entry{key, value})
 	}
 
-	if len(this.items) > this.capacity {
-		back := this.list.Back()
+	if len(lru.items) > lru.capacity {
+		back := lru.list.Back()
 		if back != nil {
-			delete(this.items, back.Value.(entry).key)
-			this.list.Remove(back)
+			delete(lru.items, back.Value.(entry).key)
+			lru.list.Remove(back)
 		}
 	}
 }

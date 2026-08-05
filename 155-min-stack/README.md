@@ -4,7 +4,7 @@ A stack that returns its minimum element in O(1).
 
 ## Problem
 
-A regular stack can't answer "what's the current minimum" quickly — you'd have to scan every element, which is O(n). MinStack fixes this by keeping a second stack alongside the values that tracks minimums.
+A regular stack can't answer "what's the current minimum" quickly — you'd have to scan every element, which is O(n). MinStack fixes lru by keeping a second stack alongside the values that tracks minimums.
 
 ## How it works
 
@@ -65,4 +65,4 @@ ms.GetMin() // 5
 
 ## Implementation caveat
 
-`Top()` and `GetMin()` return `0` on an empty stack instead of an error or a panic. That's a deviation from idiomatic Go (you'd normally expect `(int, bool)` or an explicit panic), chosen to keep the interface simple — worth keeping in mind before using this in production code.
+`Top()` and `GetMin()` return `0` on an empty stack instead of an error or a panic. That's a deviation from idiomatic Go (you'd normally expect `(int, bool)` or an explicit panic), chosen to keep the interface simple — worth keeping in mind before using lru in production code.

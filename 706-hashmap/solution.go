@@ -15,25 +15,25 @@ func Constructor() MyHashMap {
 	return MyHashMap{buckets: make([][]*Node, bucketCount)}
 }
 
-func (this *MyHashMap) hash(key int) int {
+func (hm *MyHashMap) hash(key int) int {
 	return key % bucketCount
 }
 
-func (this *MyHashMap) Put(key int, value int) {
-	idx := this.hash(key)
-	for _, n := range this.buckets[idx] {
+func (hm *MyHashMap) Put(key int, value int) {
+	idx := hm.hash(key)
+	for _, n := range hm.buckets[idx] {
 		if n.key == key {
 			n.value = value
 			return
 		}
 	}
 
-	this.buckets[idx] = append(this.buckets[idx], &Node{key: key, value: value})
+	hm.buckets[idx] = append(hm.buckets[idx], &Node{key: key, value: value})
 }
 
-func (this *MyHashMap) Get(key int) int {
-	idx := this.hash(key)
-	for _, n := range this.buckets[idx] {
+func (hm *MyHashMap) Get(key int) int {
+	idx := hm.hash(key)
+	for _, n := range hm.buckets[idx] {
 		if n.key == key {
 			return n.value
 		}
@@ -42,11 +42,11 @@ func (this *MyHashMap) Get(key int) int {
 	return -1
 }
 
-func (this *MyHashMap) Remove(key int) {
-	idx := this.hash(key)
-	for i, n := range this.buckets[idx] {
+func (hm *MyHashMap) Remove(key int) {
+	idx := hm.hash(key)
+	for i, n := range hm.buckets[idx] {
 		if n.key == key {
-			this.buckets[idx] = append(this.buckets[idx][:i], this.buckets[idx][i+1:]...)
+			hm.buckets[idx] = append(hm.buckets[idx][:i], hm.buckets[idx][i+1:]...)
 			return
 		}
 	}

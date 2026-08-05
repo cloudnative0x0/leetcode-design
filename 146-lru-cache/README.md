@@ -46,12 +46,12 @@ Two steps: find the node, mark it as recently used.
 Map lookup gives `*list.Element` in O(1). Then `MoveToFront` — not a copy or a shift, it's three pointer reassignments: detach the node, reattach at head. Return the value via type assertion from `Value any`.
 
 ```go
-func (this *LRUCache) Get(key int) int {
-    elem, ok := this.items[key]
+func (lru *LRUCache) Get(key int) int {
+    elem, ok := lru.items[key]
     if !ok {
         return -1
     }
-    this.list.MoveToFront(elem)
+    lru.list.MoveToFront(elem)
     return elem.Value.(entry).val
 }
 ```
@@ -66,19 +66,19 @@ If the key is new — `PushFront` creates a node at head and returns `*list.Elem
 After insertion, check capacity. If exceeded — `Back()` returns the tail node (LRU). Extract its key from the embedded `entry`, delete from map, remove from list. Both structures stay in sync.
 
 ```go
-func (this *LRUCache) Put(key int, value int) {
-    if elem, ok := this.items[key]; ok {
+func (lru *LRUCache) Put(key int, value int) {
+    if elem, ok := lru.items[key]; ok {
         elem.Value = entry{key, value}
-        this.list.MoveToFront(elem)
+        lru.list.MoveToFront(elem)
     } else {
-        this.items[key] = this.list.PushFront(entry{key, value})
+        lru.items[key] = lru.list.PushFront(entry{key, value})
     }
 
-    if len(this.items) > this.capacity {
-        back := this.list.Back()
+    if len(lru.items) > lru.capacity {
+        back := lru.list.Back()
         if back != nil {
-            delete(this.items, back.Value.(entry).key)
-            this.list.Remove(back)
+            delete(lru.items, back.Value.(entry).key)
+            lru.list.Remove(back)
         }
     }
 }
@@ -89,7 +89,7 @@ func (this *LRUCache) Put(key int, value int) {
 ## stdlib notes
 
 - `container/list` — Go standard doubly linked list with built-in sentinel nodes. No nil edge cases on empty list.
-- `list.Element` — holds `Value any` and `prev/next` pointers. The map stores a pointer to it — this is what connects both structures.
+- `list.Element` — holds `Value any` and `prev/next` pointers. The map stores a pointer to it — lru is what connects both structures.
 - `MoveToFront` — detaches a node and reattaches at head via pointer reassignment. O(1), no data copied.
 - `PushFront` — allocates a new node at head, returns `*list.Element`. Store the result in the map immediately.
 

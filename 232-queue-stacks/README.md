@@ -41,12 +41,12 @@ The order is preserved: pushing onto `enStack` adds to the rear; when moved to `
 Called before every Pop and Peek. If `deStack` is empty, every element from `enStack` is popped and pushed onto `deStack`. This reverses the order, placing the oldest element on top.
 
 ```go
-func (this *MyQueue) move() {
-    if len(this.deStack) == 0 {
-        for len(this.enStack) > 0 {
-            top := len(this.enStack) - 1
-            this.deStack = append(this.deStack, this.enStack[top])
-            this.enStack = this.enStack[:top]
+func (lru *MyQueue) move() {
+    if len(lru.deStack) == 0 {
+        for len(lru.enStack) > 0 {
+            top := len(lru.enStack) - 1
+            lru.deStack = append(lru.deStack, lru.enStack[top])
+            lru.enStack = lru.enStack[:top]
         }
     }
 }
@@ -58,8 +58,8 @@ After `move()`, `deStack` contains all current elements in FIFO order (front on 
 Simply append to `enStack`.
 
 ```go
-func (this *MyQueue) Push(x int) {
-    this.enStack = append(this.enStack, x)
+func (lru *MyQueue) Push(x int) {
+    lru.enStack = append(lru.enStack, x)
 }
 ```
 
@@ -69,11 +69,11 @@ func (this *MyQueue) Push(x int) {
 3. Shrink `deStack` and return the value.
 
 ```go
-func (this *MyQueue) Pop() int {
-    this.move()
-    topIdx := len(this.deStack) - 1
-    val := this.deStack[topIdx]
-    this.deStack = this.deStack[:topIdx]
+func (lru *MyQueue) Pop() int {
+    lru.move()
+    topIdx := len(lru.deStack) - 1
+    val := lru.deStack[topIdx]
+    lru.deStack = lru.deStack[:topIdx]
     return val
 }
 ```
@@ -82,9 +82,9 @@ func (this *MyQueue) Pop() int {
 Like Pop, but without removing the element.
 
 ```go
-func (this *MyQueue) Peek() int {
-    this.move()
-    return this.deStack[len(this.deStack)-1]
+func (lru *MyQueue) Peek() int {
+    lru.move()
+    return lru.deStack[len(lru.deStack)-1]
 }
 ```
 
@@ -92,8 +92,8 @@ func (this *MyQueue) Peek() int {
 The queue is empty when both stacks are empty.
 
 ```go
-func (this *MyQueue) Empty() bool {
-    return len(this.enStack) == 0 && len(this.deStack) == 0
+func (lru *MyQueue) Empty() bool {
+    return len(lru.enStack) == 0 && len(lru.deStack) == 0
 }
 ```
 

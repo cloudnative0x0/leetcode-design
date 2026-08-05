@@ -21,69 +21,69 @@ func Constructor(capacity int) LFUCache {
 	}
 }
 
-func (this *LFUCache) getList(freq int) *list.List {
-	if this.freqMap[freq] == nil {
-		this.freqMap[freq] = list.New()
+func (lfu *LFUCache) getList(freq int) *list.List {
+	if lfu.freqMap[freq] == nil {
+		lfu.freqMap[freq] = list.New()
 	}
 
-	return this.freqMap[freq]
+	return lfu.freqMap[freq]
 }
 
-func (this *LFUCache) increment(el *list.Element) {
+func (lfu *LFUCache) increment(el *list.Element) {
 	e := el.Value.(*entry)
 
-	oldList := this.freqMap[e.freq]
+	oldList := lfu.freqMap[e.freq]
 	oldList.Remove(el)
 	if oldList.Len() == 0 {
-		delete(this.freqMap, e.freq)
-		if this.minFreq == e.freq {
-			this.minFreq++
+		delete(lfu.freqMap, e.freq)
+		if lfu.minFreq == e.freq {
+			lfu.minFreq++
 		}
 	}
 
 	e.freq++
-	newList := this.getList(e.freq)
+	newList := lfu.getList(e.freq)
 	newEl := newList.PushFront(e)
-	this.keyMap[e.key] = newEl
+	lfu.keyMap[e.key] = newEl
 }
 
-func (this *LFUCache) Get(key int) int {
-	el, ok := this.keyMap[key]
+func (lfu *LFUCache) Get(key int) int {
+	el, ok := lfu.keyMap[key]
 	if !ok {
 		return -1
 	}
-	this.increment(el)
+	lfu.increment(el)
 
 	return el.Value.(*entry).val
 }
 
-func (this *LFUCache) Put(key int, value int) {
-	if this.cap == 0 {
+func (lfu *LFUCache) Put(key int, value int) {
+	if lfu.cap == 0 {
 		return
 	}
 
-	if el, ok := this.keyMap[key]; ok {
+	if el, ok := lfu.keyMap[key]; ok {
 		el.Value.(*entry).val = value
-		this.increment(el)
+		lfu.increment(el)
 		return
 	}
 
-	if len(this.keyMap) == this.cap {
-		minList := this.freqMap[this.minFreq]
+	if len(lfu.keyMap) == lfu.cap {
+		minList := lfu.freqMap[lfu.minFreq]
 
 		tail := minList.Back()
 		if tail != nil {
 			minList.Remove(tail)
-			delete(this.keyMap, tail.Value.(*entry).key)
+			delete(lfu.keyMap, tail.Value.(*entry).key)
 			if minList.Len() == 0 {
-				delete(this.freqMap, this.minFreq)
+				delete(lfu.freqMap, lfu.minFreq)
 			}
 		}
 	}
 
-	this.minFreq = 1
+	lfu.minFreq = 1
 	e := &entry{key: key, val: value, freq: 1}
-	lst := this.getList(1)
+	lst := lfu.getList(1)
 	el := lst.PushFront(e)
-	this.keyMap[key] = el
+	lfu.keyMap[key] = el
 }

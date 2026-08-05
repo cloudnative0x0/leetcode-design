@@ -1,97 +1,109 @@
 package _706_hashmap
 
 import (
+	"math/rand"
 	"testing"
 )
 
 func TestMyHashMap_BaseScenario(t *testing.T) {
-	hashMap := Constructor()
+	hm := Constructor()
 
-	hashMap.Put(1, 1)
-	hashMap.Put(2, 2)
+	hm.Put(1, 1)
+	hm.Put(2, 2)
 
-	if val := hashMap.Get(1); val != 1 {
-		t.Errorf("Expected Get(1) to return 1, got %d", val)
+	if val := hm.Get(1); val != 1 {
+		t.Errorf("Get(1) = %d, want 1", val)
 	}
-	if val := hashMap.Get(3); val != -1 {
-		t.Errorf("Expected Get(3) to return -1 (not found), got %d", val)
-	}
-
-	hashMap.Put(2, 1)
-	if val := hashMap.Get(2); val != 1 {
-		t.Errorf("Expected Get(2) to return updated value 1, got %d", val)
+	if val := hm.Get(3); val != -1 {
+		t.Errorf("Get(3) = %d, want -1", val)
 	}
 
-	hashMap.Remove(2)
-	if val := hashMap.Get(2); val != -1 {
-		t.Errorf("Expected Get(2) to return -1 after removal, got %d", val)
+	hm.Put(2, 1) // update
+	if val := hm.Get(2); val != 1 {
+		t.Errorf("Get(2) after update = %d, want 1", val)
+	}
+
+	hm.Remove(2)
+	if val := hm.Get(2); val != -1 {
+		t.Errorf("Get(2) after remove = %d, want -1", val)
 	}
 }
 
 func TestMyHashMap_Collisions(t *testing.T) {
-	hashMap := Constructor()
+	hm := Constructor()
 
-	key1 := 10
-	key2 := 10 + size
+	k1 := 100
+	k2 := 100 + bucketCount
+	k3 := 100 + 2*bucketCount
 
-	hashMap.Put(key1, 100)
-	hashMap.Put(key2, 200)
+	hm.Put(k1, 10)
+	hm.Put(k2, 20)
+	hm.Put(k3, 30)
 
-	if val := hashMap.Get(key1); val != 100 {
-		t.Errorf("Expected Get(key1) = 100, got %d", val)
+	if val := hm.Get(k1); val != 10 {
+		t.Errorf("Get(k1) = %d, want 10", val)
 	}
-	if val := hashMap.Get(key2); val != 200 {
-		t.Errorf("Expected Get(key2) = 200, got %d", val)
+	if val := hm.Get(k2); val != 20 {
+		t.Errorf("Get(k2) = %d, want 20", val)
+	}
+	if val := hm.Get(k3); val != 30 {
+		t.Errorf("Get(k3) = %d, want 30", val)
 	}
 
-	hashMap.Remove(key1)
-	if val := hashMap.Get(key1); val != -1 {
-		t.Errorf("Expected key1 to be removed, got %d", val)
+	hm.Remove(k2)
+	if val := hm.Get(k2); val != -1 {
+		t.Errorf("k2 should be removed, got %d", val)
 	}
-
-	if val := hashMap.Get(key2); val != 200 {
-		t.Errorf("Expected key2 to still exist with value 200, got %d", val)
+	if val := hm.Get(k1); val != 10 {
+		t.Errorf("k1 should still be 10, got %d", val)
 	}
-}
-
-func TestMyHashMap_RemoveFromChain(t *testing.T) {
-	hashMap := Constructor()
-
-	k1 := 5
-	k2 := 5 + size
-	k3 := 5 + (size * 2)
-
-	hashMap.Put(k1, 50)
-	hashMap.Put(k2, 60)
-	hashMap.Put(k3, 70)
-
-	hashMap.Remove(k2)
-
-	if val := hashMap.Get(k2); val != -1 {
-		t.Errorf("Expected k2 to be removed, got %d", val)
-	}
-	if val := hashMap.Get(k1); val != 50 {
-		t.Errorf("Expected k1 to remain, got %d", val)
-	}
-	if val := hashMap.Get(k3); val != 70 {
-		t.Errorf("Expected k3 to remain, got %d", val)
+	if val := hm.Get(k3); val != 30 {
+		t.Errorf("k3 should still be 30, got %d", val)
 	}
 }
 
 func TestMyHashMap_RemoveNonExistent(t *testing.T) {
-	hashMap := Constructor()
+	hm := Constructor()
 
-	assertNoPanic(t, func() { hashMap.Remove(999) })
+	assertNoPanic(t, func() { hm.Remove(9999) })
 
-	hashMap.Put(1, 10)
-	assertNoPanic(t, func() { hashMap.Remove(1 + size) })
+	hm.Put(5, 50)
+	assertNoPanic(t, func() { hm.Remove(5 + bucketCount) })
 }
 
 func assertNoPanic(t *testing.T, f func()) {
 	defer func() {
 		if r := recover(); r != nil {
-			t.Errorf("Function panicked: %v", r)
+			t.Errorf("panic: %v", r)
 		}
 	}()
 	f()
+}
+
+func TestStressHashMap(t *testing.T) {
+	const ops = 300_000
+	hm := Constructor()
+	ref := make(map[int]int)
+
+	for i := 0; i < ops; i++ {
+		key := rand.Intn(20000)
+		switch rand.Intn(3) {
+		case 0: // Put
+			val := rand.Intn(10000)
+			hm.Put(key, val)
+			ref[key] = val
+		case 1: // Get
+			got := hm.Get(key)
+			exp, ok := ref[key]
+			if !ok {
+				exp = -1
+			}
+			if got != exp {
+				t.Fatalf("Get(%d) = %d, want %d", key, got, exp)
+			}
+		case 2: // Remove
+			hm.Remove(key)
+			delete(ref, key)
+		}
+	}
 }

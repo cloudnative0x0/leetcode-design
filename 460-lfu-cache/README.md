@@ -49,24 +49,24 @@ Steps:
 - Put it to the new list (to the head)
 
 ```go
-func (this *LFUCache) increment(el *list.Element) {
+func (lru *LFUCache) increment(el *list.Element) {
     e := el.Value.(*entry)
 
-    oldList := this.freqMap[e.freq]
+    oldList := lru.freqMap[e.freq]
     oldList.Remove(el)
 
     if oldList.Len() == 0 {
-        delete(this.freqMap, e.freq)
-        if this.minFreq == e.freq {
-            this.minFreq++
+        delete(lru.freqMap, e.freq)
+        if lru.minFreq == e.freq {
+            lru.minFreq++
         }
     }
 
     e.freq++
-    newList := this.getList(e.freq)
+    newList := lru.getList(e.freq)
     newEl := newList.PushFront(e)
 
-    this.keyMap[e.key] = newEl
+    lru.keyMap[e.key] = newEl
 }
 ```
 
@@ -80,13 +80,13 @@ func (this *LFUCache) increment(el *list.Element) {
 вернули значение
 
 ```go
-func (this *LFUCache) Get(key int) int {
-    el, ok := this.keyMap[key]
+func (lru *LFUCache) Get(key int) int {
+    el, ok := lru.keyMap[key]
     if !ok {
         return -1
     }
 
-    this.increment(el)
+    lru.increment(el)
     return el.Value.(*entry).val
 }
 ```
@@ -99,38 +99,38 @@ We have three scenarios:
 Next: create a new entry with ```freq = 1```, put it in ```freq = 1``` and update ```minFreq = 1```
 
 ```go
-func (this *LFUCache) Put(key int, value int) {
-    if this.cap == 0 {
+func (lru *LFUCache) Put(key int, value int) {
+    if lru.cap == 0 {
         return
     }
 
-    if el, ok := this.keyMap[key]; ok {
+    if el, ok := lru.keyMap[key]; ok {
         el.Value.(*entry).val = value
-        this.increment(el)
+        lru.increment(el)
         return
     }
 
-    if len(this.keyMap) == this.cap {
-        minList := this.freqMap[this.minFreq]
+    if len(lru.keyMap) == lru.cap {
+        minList := lru.freqMap[lru.minFreq]
         tail := minList.Back()
 
         if tail != nil {
             minList.Remove(tail)
-            delete(this.keyMap, tail.Value.(*entry).key)
+            delete(lru.keyMap, tail.Value.(*entry).key)
 
             if minList.Len() == 0 {
-                delete(this.freqMap, this.minFreq)
+                delete(lru.freqMap, lru.minFreq)
             }
         }
     }
 
-    this.minFreq = 1
+    lru.minFreq = 1
     e := &entry{key: key, val: value, freq: 1}
 
-    lst := this.getList(1)
+    lst := lru.getList(1)
     el := lst.PushFront(e)
 
-    this.keyMap[key] = el
+    lru.keyMap[key] = el
 }
 ```
 
@@ -139,11 +139,11 @@ func (this *LFUCache) Put(key int, value int) {
 Lazy initialization of the list by frequency.
 
 ```go
-func (this *LFUCache) getList(freq int) *list.List {
-    if this.freqMap[freq] == nil {
-        this.freqMap[freq] = list.New()
+func (lru *LFUCache) getList(freq int) *list.List {
+    if lru.freqMap[freq] == nil {
+        lru.freqMap[freq] = list.New()
     }
-    return this.freqMap[freq]
+    return lru.freqMap[freq]
 }
 ```
 

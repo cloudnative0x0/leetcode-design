@@ -26,6 +26,7 @@ Every solution lives in its own folder and ships with stress tests (randomised, 
 | 155 | Min Stack | Easy | O(1) | O(n) |
 | 225 | Stack using Queues | Easy | Push O(n) | O(n) |
 | 232 | Queue using Stacks | Easy | amortized O(1) | O(n) |
+| 303 | Range Sum Query – Immutable | Easy | O(N+Q) | O(N) |
 | 460 | LFU Cache | Hard | O(1) | O(capacity) |
 | 706 | Design HashMap | Easy | avg O(1) | O(n) |
 

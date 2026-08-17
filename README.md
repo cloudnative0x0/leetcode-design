@@ -22,13 +22,15 @@ Every solution lives in its own folder and ships with stress tests (randomised, 
 
 | # | Title | Difficulty | Time | Space |
 |---|-------|------------|------|-------|
-| 146 | LRU Cache | Hard | O(1) | O(capacity) |
+| 146 | LRU Cache | Medium | O(1) | O(capacity) |
 | 155 | Min Stack | Easy | O(1) | O(n) |
 | 225 | Stack using Queues | Easy | Push O(n) | O(n) |
 | 232 | Queue using Stacks | Easy | amortized O(1) | O(n) |
-| 303 | Range Sum Query – Immutable | Easy | O(N+Q) | O(N) |
+| 303 | Range Sum Query – Immutable | Easy | Constructor O(n), SumRange O(1) | O(n) |
 | 460 | LFU Cache | Hard | O(1) | O(capacity) |
-| 706 | Design HashMap | Easy | avg O(1) | O(n) |
+| 705 | Design HashSet | Easy | O(1) amortized (expected) | O(n + m) |
+| 706 | Design HashMap | Easy | O(1) amortized (expected) | O(n + buckets) |
+| 707 | Design Linked List | Medium | O(1) head/tail, O(n) index ops | O(n) |
 
 ### How to run
 ```bash
@@ -53,12 +55,15 @@ by Herman Murauyou: [LeetCode](https://leetcode.com/CloudNative0x0) · [Codeforc
 
 | # | Название | Сложность | Время | Память |
 |---|----------|-----------|-------|--------|
-| 146 | LRU Cache | Hard | O(1) | O(capacity) |
+| 146 | LRU Cache | Medium | O(1) | O(capacity) |
 | 155 | Min Stack | Easy | O(1) | O(n) |
 | 225 | Stack using Queues | Easy | Push O(n) | O(n) |
 | 232 | Queue using Stacks | Easy | амортизированное O(1) | O(n) |
+| 303 | Range Sum Query – Immutable | Easy | Constructor O(n), SumRange O(1) | O(n) |
 | 460 | LFU Cache | Hard | O(1) | O(capacity) |
-| 706 | Design HashMap | Easy | среднее O(1) | O(n) |
+| 705 | Design HashSet | Easy | амортизированное O(1) (ожидаемо) | O(n + m) |
+| 706 | Design HashMap | Easy | среднее O(1) | O(n + buckets) |
+| 707 | Design Linked List | Medium | O(1) для head/tail, O(n) для операций по индексу | O(n) |
 
 ### Запуск
 ```bash

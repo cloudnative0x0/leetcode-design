@@ -1,12 +1,12 @@
 # 1603 · Design Parking System
 
-**Difficulty:** Easy | **Time:** O(1) per вызов | **Space:** O(1)
+**Difficulty:** Easy | **Time:** O(1) per call | **Space:** O(1)
 
 ---
 
-## Решение хранит три счётчика свободных мест
+## Solution keeps three counters of free slots
 
-Никакой структуры под слоты не нужно — важно только количество оставшихся мест каждого типа. Три поля `slotBig`, `slotMedium`, `slotSmall` уменьшаются при постановке машины и не дают уйти в минус.
+There's no need to model the slots themselves — only how many of each type remain free. Three fields, `slotBig`, `slotMedium`, `slotSmall`, get decremented when a car parks and are never allowed to go negative.
 
 ```go
 type ParkingSystem struct {
@@ -16,11 +16,11 @@ type ParkingSystem struct {
 }
 ```
 
-## Почему счётчики, а не массив/срез слотов
+## Why counters instead of an array/slice of slots
 
-- Задаче не нужно знать, какое именно место занято — только «есть свободное или нет».
-- Массив слотов дал бы ту же гарантию корректности, но добавил бы O(n) память и лишний перебор при каждой попытке поставить машину.
-- Три int'а решают задачу за константную память и константное время на операцию.
+- The problem never asks which exact slot is taken — only whether a free one exists.
+- An array of slots would give the same correctness guarantee but cost O(n) memory and an extra scan on every attempt to park.
+- Three ints solve it with constant memory and constant time per operation.
 
 ## Constructor
 
@@ -34,7 +34,7 @@ func Constructor(big int, medium int, small int) ParkingSystem {
 }
 ```
 
-Просто копирует стартовые значения вместимости в поля структуры.
+Just copies the starting capacities into the struct's fields.
 
 ## AddCar
 
@@ -62,10 +62,10 @@ func (ps *ParkingSystem) AddCar(carType int) bool {
 }
 ```
 
-- `carType` напрямую соответствует одному из трёх счётчиков (1 — big, 2 — medium, 3 — small), поэтому `switch` без доп. маппинга.
-- Место есть — счётчик уменьшается и функция возвращает `true`.
-- Места нет — счётчик не трогаем, возвращаем `false`.
+- `carType` maps directly onto one of the three counters (1 — big, 2 — medium, 3 — small), so a plain `switch` is enough, no extra lookup needed.
+- If a slot is free, the counter is decremented and the function returns `true`.
+- If none is free, the counter is left untouched and the function returns `false`.
 
 **Edge cases:**
-- Вызов с `carType` вне диапазона 1–3 не попадает ни в один `case` и падает на `return false` — паники не будет.
-- Вместимость 0 для какого-то типа изначально просто всегда возвращает `false` для него, отдельной обработки не требует.
+- A `carType` outside the 1–3 range doesn't match any `case` and falls through to `return false` — no panic.
+- A capacity of 0 for a given type just always returns `false` for it from the start, no special handling required.

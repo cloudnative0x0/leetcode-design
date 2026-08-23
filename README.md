@@ -8,7 +8,7 @@
 
 [English](#english) | [Русский](#русский)
 
-> “A ship in port is safe, but that's not what ships are built for.” – Grace Hopper
+> "A ship in port is safe, but that's not what ships are built for." – Grace Hopper
 
 ---
 
@@ -31,6 +31,9 @@ Every solution lives in its own folder and ships with stress tests (randomised, 
 | 705 | Design HashSet | Easy | O(1) amortized (expected) | O(n + m) |
 | 706 | Design HashMap | Easy | O(1) amortized (expected) | O(n + buckets) |
 | 707 | Design Linked List | Medium | O(1) head/tail, O(n) index ops | O(n) |
+| 933 | Recent Counter | Medium | O(n) worst-case | O(n) |
+| 1603 | Design Parking System | Easy | O(1) | O(1) |
+| 1656 | Design Ordered Stream | Easy | O(1) amortized | O(n) |
 
 ### How to run
 ```bash
@@ -64,6 +67,9 @@ by Herman Murauyou: [LeetCode](https://leetcode.com/CloudNative0x0) · [Codeforc
 | 705 | Design HashSet | Easy | амортизированное O(1) (ожидаемо) | O(n + m) |
 | 706 | Design HashMap | Easy | среднее O(1) | O(n + buckets) |
 | 707 | Design Linked List | Medium | O(1) для head/tail, O(n) для операций по индексу | O(n) |
+| 933 | Recent Counter | Medium | O(n) в худшем случае | O(n) |
+| 1603 | Design Parking System | Easy | O(1) | O(1) |
+| 1656 | Design Ordered Stream | Easy | O(1) амортизированное | O(n) |
 
 ### Запуск
 ```bash

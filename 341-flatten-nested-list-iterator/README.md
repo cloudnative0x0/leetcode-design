@@ -1,4 +1,4 @@
-# 341 ·NestedIterator
+# 341 · NestedIterator
 
 <p style="text-align: left">
   <a href="#русский">Русский</a> ・ <a href="#english">English</a>
